@@ -39,18 +39,3 @@ export const CarsList = styled(FlatList as new () => FlatList<CarDTO>)
   showsVerticalScrollIndicator: false
 })`
 `
-
-export const MyCarsButton = styled(RectButton)`
-  height: 60px;
-  width: 60px;
-
-  background-color: ${({ theme }) => theme.colors.main};
-  border-radius: 30px;
-
-  justify-content: center;
-  align-items: center;
-
-  position: absolute;
-  bottom: 13px;
-  right: 22px;
-`

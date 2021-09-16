@@ -11,23 +11,11 @@ export const Header = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-
   margin-top: ${getStatusBarHeight() + 18}px;
   margin-left: 24px;
 `;
 
 export const CarImages = styled.View``;
-
-
-export const Content = styled.ScrollView.attrs({
-  contentContainerStyle: {
-    padding: 12,
-    alignItems: 'center'
-  },
-  showsVerticalScrollIndicator: false
-})`
-
-`;
 
 export const Details = styled.View`
   width: 100%;
