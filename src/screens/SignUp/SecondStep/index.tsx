@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import { Alert, Keyboard, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import api from '../../../services/api';
 
 import { BackButton } from '../../../components/BackButton';
 import { Bullet } from '../../../components/Bullet';
@@ -23,7 +24,7 @@ interface SecondStepParams {
   user: {
     name: string;
     email: string;
-    driverLicence: string;
+    driverLicense: string;
   }
 }
 
@@ -31,18 +32,34 @@ export function SecondStep() {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
 
+  const navigation = useNavigation();
+
   const route = useRoute();
   const theme = useTheme();
 
   const { user } = route.params as SecondStepParams;
 
-  function handleRegister() {
+  async function handleRegister() {
     if(!password || !passwordConfirm) {
       return Alert.alert('ops', 'Insira uma senha e confirme para continuar');
     }
     if(password !== passwordConfirm) {
       return Alert.alert('ops', 'Senhas não coincidem');
     }
+
+    await api.post('/users', {
+      name: user.name,
+      email: user.email,
+      driver_license: user.driverLicense,
+      password
+    }).then(() => {
+      navigation.navigate('Confirmation', {
+        title: 'Conta criada!',
+        nextScreenRoute: 'SignIn'
+      });
+    }).catch(error => {
+      Alert.alert('Ops', 'Ocorreu um erro');
+    });
   }
 
   return (

@@ -97,7 +97,11 @@ export function SchedulingDetails() {
       id: car.id,
       unavailable_dates
     }).then(response => {
-      navigation.navigate('SchedulingComplete')
+      navigation.navigate('Confirmation', {
+        title: 'Carro Alugado',
+        message: `Agora você só precisa ir\naté uma concessionária da RENTX\npegar o seu automóvel.`,
+        nextScreenRoute: 'Home'
+      });
     })
     .catch(error => {
       setIsSubmiting(false);
@@ -135,8 +139,8 @@ export function SchedulingDetails() {
             </Description>
 
             <Rent>
-              <Period>{car.rent.period}</Period>
-              <Price>{car.rent.price}</Price>
+              <Period>{car.period}</Period>
+              <Price>{car.price}</Price>
             </Rent>
           </Details>
 
@@ -176,10 +180,10 @@ export function SchedulingDetails() {
             <RentalPriceLabel>TOTAL</RentalPriceLabel>
             <RentalPriceDetails>
               <RentalPriceQuota>
-                {`R$ ${car.rent.price} x${rentQuantity} diárias`}
+                {`R$ ${car.price} x${rentQuantity} diárias`}
               </RentalPriceQuota>
               <RentalPriceTotal>
-                R$ {car.rent.price * rentQuantity}
+                R$ {car.price * rentQuantity}
               </RentalPriceTotal>
             </RentalPriceDetails>
           </RentalPrice>

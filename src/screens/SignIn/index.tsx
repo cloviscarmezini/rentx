@@ -1,13 +1,17 @@
 import { useNavigation } from '@react-navigation/core';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar, KeyboardAvoidingView, Keyboard, Alert } from 'react-native';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { useTheme } from 'styled-components';
 import * as yup from 'yup';
 
+import { useAuth } from '../../hooks/auth'; 
+
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Spacer } from '../../components/Spacer';
+
+import { database } from '../../database';
 
 import {
   Container,
@@ -21,6 +25,8 @@ import {
 export function SignIn() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+    const { signIn } = useAuth();
 
     const navigation = useNavigation();
 
@@ -37,7 +43,7 @@ export function SignIn() {
     
             await schema.validate({email, password});
 
-            Alert.alert('login efetuado');
+            signIn({email, password});
         } catch(error) {
             if(error instanceof yup.ValidationError) {
                 return Alert.alert(error.message)
@@ -50,6 +56,16 @@ export function SignIn() {
     function handleRegister() {
         navigation.navigate('SignUpFirstStep');
     }
+
+    useEffect(() => {
+        async function loadData() {
+            const usersCollection = database.get('users');
+            const users = await usersCollection.query().fetch();
+            console.log(users);
+        }
+
+        loadData();
+    }, []);
 
     return (
         <KeyboardAvoidingView behavior="position" enabled>

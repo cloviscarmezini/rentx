@@ -11,7 +11,10 @@ import {
 } from './styles';
 
 interface ImageSliderProps {
-  imagesUrls: string[];
+  imagesUrls: {
+    id: string;
+    photo: string;
+  }[];
 }
 
 interface ChangeImageProps {
@@ -31,19 +34,19 @@ export function ImageSlider({ imagesUrls }: ImageSliderProps) {
     <Container>
         <ImageIndexes>
           {
-            imagesUrls.map((_, index) => 
-              <Bullet key={index} active={index === imageIndex}/>
+            imagesUrls.map((item, index) => 
+              <Bullet key={item.id} active={index === imageIndex}/>
             )
           }
         </ImageIndexes>
 
         <FlatList 
           data={imagesUrls}
-          keyExtractor={key => key}
+          keyExtractor={item => item.id}
           renderItem={({ item })=>
             <CarImageWrapper>
               <CarImage
-                source={{ uri: item }}
+                source={{ uri: item.photo }}
                 resizeMode="cover"
               />
             </CarImageWrapper>
