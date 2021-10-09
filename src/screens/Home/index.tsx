@@ -68,19 +68,29 @@ export function Home() {
   const navigation = useNavigation();
 
   useEffect(() => {
-    getCars();
-  }, []);
-
-  async function getCars() {
-    try {
-      const response = await api.get('/cars');
-      setCars(response.data);
-    } catch(error) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
+    let isMounted = true;
+    
+    async function getCars() {
+      try {
+        const response = await api.get('/cars');
+        if(isMounted) {
+          setCars(response.data);
+        }
+      } catch(error) {
+        console.log(error);
+      } finally {
+        if(isMounted) {
+          setIsLoading(false);
+        }
+      }
     }
-  }
+
+    getCars();
+
+    return () => {
+      isMounted = false;
+    }
+  }, []);
 
   function handleCarDetails(car: CarDTO) {
     navigation.navigate('CarDetails', { car });

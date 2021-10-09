@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/core';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { StatusBar, KeyboardAvoidingView, Keyboard, Alert } from 'react-native';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { useTheme } from 'styled-components';
@@ -10,8 +10,6 @@ import { useAuth } from '../../hooks/auth';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Spacer } from '../../components/Spacer';
-
-import { database } from '../../database';
 
 import {
   Container,
@@ -56,16 +54,6 @@ export function SignIn() {
     function handleRegister() {
         navigation.navigate('SignUpFirstStep');
     }
-
-    useEffect(() => {
-        async function loadData() {
-            const usersCollection = database.get('users');
-            const users = await usersCollection.query().fetch();
-            console.log(users);
-        }
-
-        loadData();
-    }, []);
 
     return (
         <KeyboardAvoidingView behavior="position" enabled>
