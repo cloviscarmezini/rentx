@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback, Alert } from 'react-native';
 import { BackButton } from '../../components/BackButton';
 import { Feather } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
@@ -28,15 +28,19 @@ import { useAuth } from '../../hooks/auth';
 import { Spacer } from '../../components/Spacer';
 
 export function Profile() {
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const theme = useTheme();
     const [option, setOption] = useState<'dataEdit'|'passwordEdit'>('dataEdit');
     const [name, setName] = useState(user.name);
     const [driverLicense, setDriverLicense] = useState(user.driver_license);
     const [avatar, setAvatar] = useState(user.avatar);
 
-    function handleSignOut() {
-
+    async function handleSignOut() {
+        try {
+            await signOut();
+        } catch(error) {
+            Alert.alert('Erro no logout')
+        }
     }
 
     function handleChangeOption(newOption: 'dataEdit'|'passwordEdit') {
@@ -77,7 +81,9 @@ export function Profile() {
                             </LogoutButton>
                         </HeaderTop>
                         <PhotoContainer>
-                            <Photo source={{ uri: avatar}} />
+                            { !!avatar &&
+                                <Photo source={{ uri: avatar}} />
+                            }
                             <PhotoButton onPress={handleSelectAvatar} >
                                 <Feather
                                     name="camera"

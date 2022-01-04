@@ -59,16 +59,18 @@ function AuthProvider({ children }: AuthProviderProps) {
     
             api.defaults.headers.authorizarion = `Bearer ${token}`;
 
-            await database
-            .get<UserModel>('users')
-            .create(newUser => {
-                newUser.user_id = user.id,
-                newUser.name = user.name,
-                newUser.email = user.email,
-                newUser.driver_license = user.driver_license,
-                newUser.avatar = user.avatar,
-                newUser.token = token
-            });
+
+            await database.write(() => {
+                return database.get<UserModel>('users')
+                .create(newUser => {
+                    newUser.user_id = user.id,
+                    newUser.name = user.name,
+                    newUser.email = user.email,
+                    newUser.driver_license = user.driver_license,
+                    newUser.avatar = user.avatar,
+                    newUser.token = token
+                })
+            })
     
             setData({ ...user, token });   
         } catch(error) {
@@ -77,7 +79,19 @@ function AuthProvider({ children }: AuthProviderProps) {
     }
  
     async function signOut() {
-        console.log('logout');
+        try {
+            const userCollection = database.get<UserModel>('users');
+            const user = await userCollection.find(data.id);
+
+            await database.write(() => {
+                return user.destroyPermanently();
+            });
+
+            setData({} as UserProps);
+        } catch(error) {
+            console.log(error)
+            throw new Error(error);
+        }
     }
 
     return (
