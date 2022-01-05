@@ -41,7 +41,7 @@ export function SignIn() {
     
             await schema.validate({email, password});
 
-            signIn({email, password});
+            await signIn({email, password});
         } catch(error) {
             if(error instanceof yup.ValidationError) {
                 return Alert.alert(error.message)

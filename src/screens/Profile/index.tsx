@@ -4,6 +4,8 @@ import { BackButton } from '../../components/BackButton';
 import { Feather } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
+import * as Yup from 'yup';
+
 import * as ImagePicker from 'expo-image-picker';
 
 import {
@@ -26,9 +28,10 @@ import { useTheme } from 'styled-components';
 import { Input } from '../../components/Input';
 import { useAuth } from '../../hooks/auth';
 import { Spacer } from '../../components/Spacer';
+import { Button } from '../../components/Button';
 
 export function Profile() {
-    const { user, signOut } = useAuth();
+    const { user, updateUser, signOut } = useAuth();
     const theme = useTheme();
     const [option, setOption] = useState<'dataEdit'|'passwordEdit'>('dataEdit');
     const [name, setName] = useState(user.name);
@@ -37,7 +40,20 @@ export function Profile() {
 
     async function handleSignOut() {
         try {
-            await signOut();
+            Alert.alert(
+                'Ter certeza?',
+                'Lembre-se que se você sair, irá precisar de internet para conectar-se novamente.',
+                [
+                    {
+                        text: 'Cancelar',
+                        onPress: () => {},
+                    },
+                    {
+                        text: 'Sair',
+                        onPress: () => signOut()
+                    },
+                ]
+            );
         } catch(error) {
             Alert.alert('Erro no logout')
         }
@@ -61,6 +77,34 @@ export function Profile() {
 
         if(result.uri) {
             setAvatar(result.uri);
+        }
+    }
+
+    async function handleUpdateProfile() {
+        try {
+            const schema = Yup.object().shape({
+                driverLicense: Yup.string().required('CNH é obrigatória'),
+                name: Yup.string().required('Nome é obrigatória'),
+            })
+
+            const data = { name, driverLicense };
+
+            await schema.validate(data);
+
+            await updateUser({
+                ...user,
+                name,
+                driver_license: driverLicense,
+                avatar
+            });
+
+            Alert.alert('Perfil atualizado com sucesso');
+        } catch(error) {
+            if(error instanceof Yup.ValidationError) {
+                return Alert.alert('Opa', error.message);
+            }
+
+            Alert.alert('Ocorreu um erro ao atualizar o perfil');
         }
     }
 
@@ -163,6 +207,13 @@ export function Profile() {
                                 />
                             </Section>
                         )}
+
+                        <Spacer />
+
+                        <Button
+                            title="Salvar alterações"
+                            onPress={handleUpdateProfile}
+                        />
 
                     </Content>
                 </Container>

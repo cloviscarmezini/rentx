@@ -22,6 +22,7 @@ interface AuthContextData {
     user: UserProps;
     signIn: (credentials: SignInCredentials) => Promise<void>;
     signOut: () => Promise<void>;
+    updateUser: (user: UserProps) => Promise<void>;
 }
 
 interface AuthProviderProps {
@@ -81,10 +82,10 @@ function AuthProvider({ children }: AuthProviderProps) {
     async function signOut() {
         try {
             const userCollection = database.get<UserModel>('users');
-            const user = await userCollection.find(data.id);
+            const userSelected = await userCollection.find(data.id);
 
             await database.write(() => {
-                return user.destroyPermanently();
+                return userSelected.destroyPermanently();
             });
 
             setData({} as UserProps);
@@ -94,12 +95,34 @@ function AuthProvider({ children }: AuthProviderProps) {
         }
     }
 
+    async function updateUser(user: UserProps) {
+        try {
+            const userCollection = database.get<UserModel>('users');
+            const userSelected = await userCollection.find(data.id);
+
+            await database.write(() => {
+                return userSelected.update(( userData ) => {
+                    userData.name = user.name,
+                    userData.driver_license = user.driver_license,
+                    userData.avatar = user.avatar
+                });
+            });
+
+            setData(user);
+
+            return true;
+        } catch(error) {
+            throw new Error(error);
+        }
+    }
+
     return (
         <AuthContext.Provider
             value={{
                 user: data,
                 signIn,
-                signOut
+                signOut,
+                updateUser
             }}
         >
             { children }
