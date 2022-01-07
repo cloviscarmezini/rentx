@@ -2,6 +2,7 @@ import React, { useState, useContext, createContext, ReactNode, useEffect } from
 import api from '../services/api';
 import { database } from '../database';
 import { User as UserModel } from '../database/model/User';
+import { Alert } from 'react-native';
 
 interface UserProps {
     id: string;
@@ -23,6 +24,7 @@ interface AuthContextData {
     signIn: (credentials: SignInCredentials) => Promise<void>;
     signOut: () => Promise<void>;
     updateUser: (user: UserProps) => Promise<void>;
+    isLoading: Boolean;
 }
 
 interface AuthProviderProps {
@@ -33,6 +35,7 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 function AuthProvider({ children }: AuthProviderProps) {
     const [data, setData] = useState<UserProps>({} as UserProps);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         loadUserData();
@@ -40,12 +43,19 @@ function AuthProvider({ children }: AuthProviderProps) {
 
     async function loadUserData() {
         const userCollection = database.get<UserModel>('users');
-        const response = await userCollection.query().fetch();
 
-        if(response.length) {
-            const userData = response[0]._raw as unknown as UserProps;
-            api.defaults.headers.authorizarion = `Bearer ${userData.token}`;
-            setData(userData);
+        try {
+            const response = await userCollection.query().fetch();
+
+            if(response.length) {
+                const userData = response[0]._raw as unknown as UserProps;
+                api.defaults.headers.authorizarion = `Bearer ${userData.token}`;
+                setData(userData);
+            }
+        } catch(error) {
+            Alert.alert(error.message)
+        } finally {
+            setIsLoading(false);
         }
     }
  
@@ -122,7 +132,8 @@ function AuthProvider({ children }: AuthProviderProps) {
                 user: data,
                 signIn,
                 signOut,
-                updateUser
+                updateUser,
+                isLoading
             }}
         >
             { children }

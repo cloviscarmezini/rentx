@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { StatusBar, StyleSheet, Alert } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from 'styled-components';
 import { RectButton, PanGestureHandler } from 'react-native-gesture-handler';
 import { useNetInfo } from '@react-native-community/netinfo';
+import { synchronize } from '@nozbe/watermelondb/sync';
+import { database } from '../../database';
+import { Car as ModelCar } from '../../database/model/Car'
 
 import api from '../../services/api';
 
@@ -34,7 +37,7 @@ import {
 } from './styles';
 
 export function Home() {
-  const [cars, setCars] = useState<CarDTO[]>([]);
+  const [cars, setCars] = useState<ModelCar[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const netInfo = useNetInfo();
@@ -70,7 +73,7 @@ export function Home() {
 
   const navigation = useNavigation();
 
-  function handleCarDetails(car: CarDTO) {
+  function handleCarDetails(car: ModelCar) {
     navigation.navigate('CarDetails', { car });
   }
 
@@ -78,14 +81,33 @@ export function Home() {
     navigation.navigate('MyCars');
   }
 
+  async function offlineSynchronize() {
+    await synchronize({
+      database,
+      pullChanges: async ({ lastPulledAt }) => {
+        const response = await api.get(`/cars/sync/pull?lastPulledVersion=${lastPulledAt || 0}`);
+
+        const { changes, latestVersion: timestamp } = response.data;
+
+        return { changes, timestamp };
+      },
+      pushChanges: async ({ changes }) => {
+        const user = changes.users;
+        await api.post('/users/sync', user);
+      }
+    });
+  }
+
   useEffect(() => {
     let isMounted = true;
     
     async function getCars() {
       try {
-        const response = await api.get('/cars');
+        const carsCollection = database.get<ModelCar>('cars');
+        const cars = await carsCollection.query().fetch();
+
         if(isMounted) {
-          setCars(response.data);
+          setCars(cars);
         }
       } catch(error) {
         console.log(error);
@@ -105,11 +127,9 @@ export function Home() {
 
   useEffect(() => {
     if(netInfo.isConnected) {
-      Alert.alert('Você está online')
-    } else {
-      Alert.alert('Você está offline')
+      offlineSynchronize();
     }
-  }, [netInfo.isConnected])
+  }, [netInfo.isConnected]);
 
   return (
     <Container>

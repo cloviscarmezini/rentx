@@ -34,11 +34,12 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { CarDTO } from '../../dtos/CarDTO';
+import { Car as ModelCar } from '../../database/model/Car'
 
 import { getAccessoryIcon } from '../../utils/getAccessoryIcon';
 
 interface CarDetailsParamsProps {
-  car: CarDTO;
+  car: ModelCar;
 };
 
 export function CarDetails() {
