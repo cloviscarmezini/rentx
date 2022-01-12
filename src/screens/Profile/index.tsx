@@ -3,6 +3,7 @@ import { KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback, Alert } from 
 import { BackButton } from '../../components/BackButton';
 import { Feather } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useNetInfo } from '@react-native-community/netinfo';
 
 import * as Yup from 'yup';
 
@@ -32,6 +33,7 @@ import { Button } from '../../components/Button';
 
 export function Profile() {
     const { user, updateUser, signOut } = useAuth();
+    const netInfo = useNetInfo();
     const theme = useTheme();
     const [option, setOption] = useState<'dataEdit'|'passwordEdit'>('dataEdit');
     const [name, setName] = useState(user.name);
@@ -60,6 +62,9 @@ export function Profile() {
     }
 
     function handleChangeOption(newOption: 'dataEdit'|'passwordEdit') {
+        if(netInfo.isConnected === false && newOption === 'passwordEdit')  {
+            return Alert.alert('Você está offline', 'Para mudar a senha, conecte-se a Internet')
+        }
         setOption(newOption);
     }
 
@@ -213,6 +218,7 @@ export function Profile() {
                         <Button
                             title="Salvar alterações"
                             onPress={handleUpdateProfile}
+                            enabled={netInfo.isConnected === true}
                         />
 
                     </Content>
